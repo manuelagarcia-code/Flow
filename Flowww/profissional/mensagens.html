@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mensagens - Flow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .bubble-me { background: #dbeafe; }
+    .bubble-them { background: #f3f4f6; }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div class="flex min-h-screen">
+    <aside class="w-64 bg-[#0f2b5b] text-white flex flex-col shrink-0">
+      <div class="p-5 border-b border-white/10">
+        <div class="flex items-center gap-2 mb-6">
+          <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
+            <svg viewBox="0 0 24 24" class="w-5 h-5 text-white" fill="currentColor"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z"/></svg>
+          </div>
+          <span class="font-semibold">Flow</span>
+        </div>
+        <div class="relative">
+          <button type="button" onclick="toggleMenuUsuario()" class="flex items-center gap-3 w-full text-left hover:bg-white/10 rounded-xl p-1 -m-1">
+            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden shrink-0" id="avatar-box">
+              <span id="iniciais">DM</span>
+              <img id="foto-usuario" class="hidden w-full h-full object-cover" alt="">
+            </div>
+            <div class="min-w-0">
+              <p class="font-medium text-sm truncate" id="nome-usuario">Dr.</p>
+              <p class="text-blue-200 text-xs" id="crm-usuario">CRM</p>
+            </div>
+          </button>
+          <div id="menu-usuario" class="hidden absolute left-0 right-0 top-full mt-2 bg-white text-gray-800 rounded-xl shadow-xl border z-50 overflow-hidden">
+            <label class="flex items-center gap-2 px-4 py-3 text-sm hover:bg-gray-50 cursor-pointer border-b">
+              <span>📷 Alterar foto</span>
+              <input type="file" accept="image/*" class="hidden" onchange="trocarFoto(this)">
+            </label>
+            <button type="button" onclick="excluirConta()" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50">🗑️ Excluir conta</button>
+          </div>
+        </div>
+      </div>
+      <nav class="flex-1 p-4 space-y-1 text-sm">
+        <a href="agenda.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10">Agenda</a>
+        <a href="buscar.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10">Buscar Paciente</a>
+        <a href="relatorio.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10">Relatório</a>
+        <a href="prescrever.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10">Prescrever</a>
+        <a href="mensagens.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-blue-600 text-white relative">Mensagens <span id="badge-chat" class="hidden ml-auto w-2.5 h-2.5 bg-red-500 rounded-full"></span></a>
+        <a href="disponibilidade.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10">Disponibilidade</a>
+      </nav>
+      <div class="p-4 border-t border-white/10"><button onclick="sair()" class="text-blue-200 hover:text-white text-sm">Sair</button></div>
+    </aside>
+
+    <div class="flex-1 flex bg-white min-h-screen">
+      <!-- LISTA DE PACIENTES -->
+      <div id="painel-lista" class="w-full max-w-sm border-r border-gray-200 flex flex-col bg-white">
+        <div class="p-4 border-b border-gray-100"><p class="font-medium text-sm text-gray-800">Mensagens com pacientes</p></div>
+        <div class="p-2">
+          <input type="text" id="busca-chat" placeholder="Pesquisar paciente..." class="w-full px-4 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm outline-none" oninput="filtrarLista()">
+        </div>
+        <div id="lista-contatos" class="flex-1 overflow-y-auto"></div>
+      </div>
+
+      <!-- CONVERSA (só quando escolhe alguém) -->
+      <div id="painel-chat" class="flex-1 flex-col bg-gray-50" style="display:none">
+        <div class="p-3 bg-white border-b border-gray-200 flex items-center gap-3">
+          <button type="button" onclick="fecharChat()" class="text-blue-600 text-lg shrink-0 px-1 hover:bg-blue-50 rounded">←</button>
+          <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold" id="chat-iniciais">P</div>
+          <div class="flex-1">
+            <p class="font-medium text-sm text-gray-900" id="chat-nome">Paciente</p>
+            <p class="text-gray-400 text-xs">paciente</p>
+          </div>
+        </div>
+        <div id="mensagens" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
+        <div class="p-3 bg-white border-t border-gray-200 flex gap-2 items-center">
+          <input type="text" id="input-msg" placeholder="Mensagem" class="flex-1 px-4 py-2.5 rounded-full bg-gray-100 text-gray-800 text-sm outline-none" onkeydown="if(event.key==='Enter')enviar()">
+          <button onclick="enviar()" class="w-11 h-11 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center text-white text-lg">➤</button>
+        </div>
+      </div>
+
+      <!-- PAINEL VAZIO (só quando NÃO tem conversa aberta) -->
+      <div id="painel-vazio" class="flex-1 items-center justify-center bg-gray-50" style="display:flex">
+        <div class="text-center text-gray-400">
+          <div class="w-16 h-16 mx-auto mb-4 bg-blue-600 rounded-2xl flex items-center justify-center">
+            <svg viewBox="0 0 24 24" class="w-10 h-10 text-white" fill="currentColor"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z"/></svg>
+          </div>
+          <p class="text-lg">Flow Chat</p>
+          <p class="text-sm mt-1">Selecione um paciente para conversar</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem('usuarioLogado') || 'null');
+    if (!user || user.tipo !== 'profissional') window.location.href = '../login.html';
+    else {
+      document.getElementById('nome-usuario').textContent = user.nome;
+      document.getElementById('crm-usuario').textContent = user.crm || '';
+      const n = user.nome.split(' ');
+      document.getElementById('iniciais').textContent = (n[0][0] + (n[1] ? n[1][0] : '')).toUpperCase();
+      if (user.foto) {
+        document.getElementById('foto-usuario').src = user.foto;
+        document.getElementById('foto-usuario').classList.remove('hidden');
+        document.getElementById('iniciais').classList.add('hidden');
+      }
+    }
+
+    // Pacientes de demonstração
+    (function seed() {
+      var usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      var demos = [
+        {id:'pac_demo_1', tipo:'paciente', nome:'Ana Carolina Souza', cpf:'123.456.789-00', nascimento:'1995-03-12', telefone:'(11) 98888-1111', sus:'123456789012345', email:'ana.souza@email.com', senha:'123456'},
+        {id:'pac_demo_2', tipo:'paciente', nome:'Roberto Gomes', cpf:'987.654.321-00', nascimento:'1988-07-22', telefone:'(11) 97777-2222', sus:'987654321098765', email:'roberto.gomes@email.com', senha:'123456'},
+        {id:'pac_demo_3', tipo:'paciente', nome:'Maria Silva Santos', cpf:'111.222.333-44', nascimento:'2001-11-05', telefone:'(11) 96666-3333', sus:'111222333444555', email:'maria.silva@email.com', senha:'123456'},
+        {id:'pac_demo_4', tipo:'paciente', nome:'João Pedro Almeida', cpf:'555.666.777-88', nascimento:'1979-01-30', telefone:'(11) 95555-4444', sus:'555666777888999', email:'joao.almeida@email.com', senha:'123456'}
+      ];
+      var ids = {};
+      usuarios.forEach(function(u){ ids[u.id]=true; ids[u.email]=true; });
+      var add = false;
+      demos.forEach(function(d){
+        if (!ids[d.id] && !ids[d.email]) { usuarios.push(d); add = true; }
+      });
+      if (add) localStorage.setItem('usuarios', JSON.stringify(usuarios));
+    })();
+
+    const notif = JSON.parse(localStorage.getItem('notif_' + user.id) || '{}');
+    if (notif.chat) document.getElementById('badge-chat').classList.remove('hidden');
+
+    function listarPacientes() {
+      const msgs = getTodasMsgs();
+      const users = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      const mapa = {};
+      users.filter(function(u){ return u.tipo === 'paciente'; }).forEach(function(p) {
+        mapa[p.id] = {
+          id: p.id,
+          nome: p.nome,
+          iniciais: p.nome.split(' ').map(function(x){return x[0];}).slice(0,2).join('').toUpperCase(),
+          foto: p.foto
+        };
+      });
+      msgs.forEach(function(m) {
+        var id = m.de === user.id ? m.para : (m.para === user.id ? m.de : null);
+        if (id && !mapa[id]) {
+          var nome = m.de === id ? m.deNome : m.paraNome;
+          mapa[id] = { id: id, nome: nome || 'Paciente', iniciais: (nome || 'P').substring(0,2).toUpperCase() };
+        }
+      });
+      return Object.keys(mapa).map(function(k){ return mapa[k]; });
+    }
+
+    let contatoAtual = null;
+    function getTodasMsgs(){ return JSON.parse(localStorage.getItem('flow_mensagens')||'[]'); }
+    function salvarTodasMsgs(msgs){ localStorage.setItem('flow_mensagens', JSON.stringify(msgs)); }
+    function msgsCom(outroId){
+      return getTodasMsgs().filter(function(m){
+        return (m.de===user.id&&m.para===outroId)||(m.de===outroId&&m.para===user.id);
+      }).sort(function(a,b){ return a.ts-b.ts; });
+    }
+    function horaFmt(ts){
+      const d=new Date(ts);
+      return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+    }
+    function escapar(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+
+    function carregarLista(){
+      const lista = listarPacientes();
+      const msgs = getTodasMsgs();
+      if (!lista.length) {
+        document.getElementById('lista-contatos').innerHTML = '<p class="text-gray-400 text-sm p-4 text-center">Nenhum paciente ainda. Eles aparecem quando se cadastram ou enviam mensagem.</p>';
+        return;
+      }
+      document.getElementById('lista-contatos').innerHTML = lista.map(function(p){
+        const conv = msgs.filter(function(m){ return (m.de===user.id&&m.para===p.id)||(m.de===p.id&&m.para===user.id); });
+        const last = conv.length ? conv[conv.length-1] : null;
+        const preview = last ? ((last.de===user.id?'Você: ':'')+last.texto) : 'Iniciar conversa';
+        const hora = last ? horaFmt(last.ts) : '';
+        const naoLidas = conv.filter(function(m){ return m.de===p.id && !m.lida; }).length;
+        return '<div onclick="abrirChat(\''+p.id+'\')" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100" data-nome="'+(p.nome||'').toLowerCase()+'">'+
+          '<div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden">'+(p.foto?'<img src="'+p.foto+'" class="w-full h-full object-cover">':p.iniciais)+'</div>'+
+          '<div class="flex-1 min-w-0"><div class="flex justify-between"><p class="text-gray-900 text-sm font-medium truncate">'+p.nome+'</p><span class="text-xs text-gray-400">'+hora+'</span></div>'+
+          '<div class="flex justify-between items-center"><p class="text-xs text-gray-500 truncate">'+preview+'</p>'+(naoLidas?'<span class="ml-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">'+naoLidas+'</span>':'')+'</div></div></div>';
+      }).join('');
+    }
+
+    function filtrarLista(){
+      const q = document.getElementById('busca-chat').value.toLowerCase();
+      document.querySelectorAll('#lista-contatos > div').forEach(function(el){
+        el.style.display = (el.dataset.nome||'').includes(q) ? '' : 'none';
+      });
+    }
+
+    function fecharChat(){
+      document.getElementById('painel-chat').style.display = 'none';
+      document.getElementById('painel-lista').style.display = '';
+      document.getElementById('painel-vazio').style.display = 'flex';
+      contatoAtual = null;
+    }
+
+    function abrirChat(pacId){
+      contatoAtual = listarPacientes().find(function(p){ return p.id===pacId; });
+      if (!contatoAtual) return;
+
+      // SOME lista e painel vazio — FICA SÓ a conversa
+      document.getElementById('painel-lista').style.display = 'none';
+      document.getElementById('painel-vazio').style.display = 'none';
+      document.getElementById('painel-chat').style.display = 'flex';
+
+      document.getElementById('chat-iniciais').textContent = contatoAtual.iniciais;
+      document.getElementById('chat-nome').textContent = contatoAtual.nome;
+
+      const msgs = getTodasMsgs();
+      msgs.forEach(function(m){ if(m.de===pacId&&m.para===user.id) m.lida=true; });
+      salvarTodasMsgs(msgs);
+      const n = JSON.parse(localStorage.getItem('notif_'+user.id)||'{}');
+      n.chat=0; localStorage.setItem('notif_'+user.id, JSON.stringify(n));
+      document.getElementById('badge-chat').classList.add('hidden');
+
+      renderMsgs();
+      document.getElementById('input-msg').focus();
+    }
+
+    function renderMsgs(){
+      if (!contatoAtual) return;
+      const msgs = msgsCom(contatoAtual.id);
+      const div = document.getElementById('mensagens');
+      if (!msgs.length){
+        div.innerHTML='<p class="text-center text-gray-400 text-sm py-8">Nenhuma mensagem. Envie a primeira!</p>';
+        return;
+      }
+      div.innerHTML = msgs.map(function(m){
+        const eu = m.de===user.id;
+        return '<div class="flex '+(eu?'justify-end':'')+' group"><div class="'+(eu?'bubble-me':'bubble-them')+' text-gray-800 text-sm px-3 py-2 rounded-lg max-w-[75%] shadow-sm">'+
+          escapar(m.texto)+
+          '<div class="flex items-center justify-end gap-2 mt-0.5"><span class="text-[10px] text-gray-400">'+horaFmt(m.ts)+'</span>'+
+          '<button onclick="apagarMsg(\''+m.id+'\')" class="text-[10px] text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100" title="Apagar">✕</button></div></div></div>';
+      }).join('');
+      div.scrollTop = div.scrollHeight;
+    }
+
+    function apagarMsg(id){
+      if (!confirm('Apagar esta mensagem?')) return;
+      salvarTodasMsgs(getTodasMsgs().filter(function(m){ return m.id !== id; }));
+      renderMsgs();
+      carregarLista();
+    }
+
+    function enviar(){
+      const input = document.getElementById('input-msg');
+      const texto = input.value.trim();
+      if (!texto || !contatoAtual) return;
+      const msgs = getTodasMsgs();
+      msgs.push({
+        id: Date.now().toString(), de: user.id, deNome: user.nome, deTipo: 'profissional',
+        para: contatoAtual.id, paraNome: contatoAtual.nome, paraTipo: 'paciente',
+        texto: texto, ts: Date.now(), lida: false
+      });
+      salvarTodasMsgs(msgs);
+      const np = JSON.parse(localStorage.getItem('notif_'+contatoAtual.id)||'{}');
+      np.chat = (np.chat||0)+1;
+      localStorage.setItem('notif_'+contatoAtual.id, JSON.stringify(np));
+      input.value = '';
+      renderMsgs();
+      carregarLista();
+    }
+
+    function toggleMenuUsuario(){ document.getElementById('menu-usuario').classList.toggle('hidden'); }
+    document.addEventListener('click', function(e){
+      const m=document.getElementById('menu-usuario');
+      if(m&&!e.target.closest('.relative')) m.classList.add('hidden');
+    });
+    function trocarFoto(input){
+      const file=input.files[0]; if(!file)return;
+      if(!file.type.startsWith('image/')){alert('Selecione uma imagem.');return;}
+      if(file.size>2*1024*1024){alert('Máximo 2 MB.');return;}
+      const reader=new FileReader();
+      reader.onload=function(e){
+        const foto=e.target.result; user.foto=foto;
+        localStorage.setItem('usuarioLogado',JSON.stringify(user));
+        const usuarios=JSON.parse(localStorage.getItem('usuarios')||'[]');
+        const i=usuarios.findIndex(function(u){return u.id===user.id;});
+        if(i>=0){usuarios[i].foto=foto;localStorage.setItem('usuarios',JSON.stringify(usuarios));}
+        document.getElementById('foto-usuario').src=foto;
+        document.getElementById('foto-usuario').classList.remove('hidden');
+        document.getElementById('iniciais').classList.add('hidden');
+        document.getElementById('menu-usuario').classList.add('hidden');
+        alert('Foto atualizada!');
+      };
+      reader.readAsDataURL(file);
+    }
+    function excluirConta(){
+      if(!confirm('Excluir sua conta? Não dá para desfazer.'))return;
+      if(!confirm('Confirma a exclusão definitiva?'))return;
+      const id=user.id;
+      localStorage.setItem('usuarios',JSON.stringify(JSON.parse(localStorage.getItem('usuarios')||'[]').filter(function(u){return u.id!==id;})));
+      localStorage.removeItem('usuarioLogado');
+      alert('Conta excluída.'); window.location.href='../index.html';
+    }
+    function sair(){ localStorage.removeItem('usuarioLogado'); window.location.href='../index.html'; }
+
+    carregarLista();
+    setInterval(function(){ if(contatoAtual) renderMsgs(); carregarLista(); }, 2000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criar conta - Flow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <header class="bg-white border-b border-gray-100 py-4">
+    <div class="max-w-lg mx-auto px-4 text-center">
+      <a href="index.html" class="inline-flex items-center gap-2 text-[#0f2b5b] font-semibold">
+        <div class="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
+          <svg viewBox="0 0 24 24" class="w-4 h-4 text-white" fill="currentColor"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z"/></svg>
+        </div>
+        Flow
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-lg mx-auto px-4 py-10">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-gray-900">Criar conta</h1>
+      <p class="text-gray-500 mt-1">Preencha os dados para se cadastrar</p>
+    </div>
+
+    <!-- ABAS: Paciente / Profissional -->
+    <div class="flex bg-gray-100 rounded-xl p-1 mb-6">
+      <button type="button" id="tab-paciente" onclick="trocarTipo('paciente')" class="flex-1 py-2.5 rounded-lg text-sm font-medium bg-blue-600 text-white">Paciente</button>
+      <button type="button" id="tab-profissional" onclick="trocarTipo('profissional')" class="flex-1 py-2.5 rounded-lg text-sm font-medium text-gray-600">Profissional de Saúde</button>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <!-- FORM PACIENTE -->
+      <form id="form-paciente" onsubmit="cadastrarPaciente(event)">
+        <div class="flex flex-col items-center mb-6">
+          <label class="cursor-pointer">
+            <div class="w-24 h-24 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden hover:border-blue-400">
+              <span class="text-gray-400 text-3xl" id="p-foto-icon">📷</span>
+              <img id="p-foto-img" class="hidden w-full h-full object-cover" alt="">
+            </div>
+            <input type="file" id="p-foto" accept="image/*" class="hidden" onchange="previewFoto(this,'p')">
+          </label>
+          <p class="text-xs text-gray-500 mt-2">Clique para adicionar foto</p>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nome completo</label>
+          <input type="text" id="p-nome" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50" placeholder="Ana Carolina Souza">
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">CPF</label>
+            <input type="text" id="p-cpf" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50" placeholder="000.000.000-00">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nascimento</label>
+            <input type="date" id="p-nascimento" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50">
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
+          <input type="text" id="p-endereco" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50">
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+            <input type="text" id="p-telefone" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Cartão SUS</label>
+            <input type="text" id="p-sus" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50">
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+          <input type="email" id="p-email" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50">
+        </div>
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+          <input type="password" id="p-senha" required minlength="6" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50">
+        </div>
+        <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl">Criar conta</button>
+      </form>
+
+      <!-- FORM PROFISSIONAL -->
+      <form id="form-profissional" class="hidden" onsubmit="cadastrarProfissional(event)">
+        <div class="flex flex-col items-center mb-6">
+          <label class="cursor-pointer">
+            <div class="w-24 h-24 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden hover:border-blue-400">
+              <span class="text-gray-400 text-3xl" id="pr-foto-icon">📷</span>
+              <img id="pr-foto-img" class="hidden w-full h-full object-cover" alt="">
+            </div>
+            <input type="file" id="pr-foto" accept="image/*" class="hidden" onchange="previewFoto(this,'pr')">
+          </label>
+          <p class="text-xs text-gray-500 mt-2">Clique para adicionar foto</p>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">CRM</label>
+          <input type="text" id="pr-crm" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50" placeholder="CRM/SP 123456">
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nome completo</label>
+          <input type="text" id="pr-nome" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50" placeholder="Dr. Ricardo Lima">
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">CPF</label>
+            <input type="text" id="pr-cpf" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nascimento</label>
+            <input type="date" id="pr-nascimento" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50">
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Hospitais em que trabalha</label>
+          <div class="flex gap-2 mb-2">
+            <input type="text" id="pr-hospital-input" class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50" placeholder="Nome do hospital">
+            <button type="button" onclick="addHospital()" class="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium">+</button>
+          </div>
+          <div id="pr-hospitais-lista" class="flex flex-wrap gap-2"></div>
+          <input type="hidden" id="pr-hospital">
+          <p class="text-xs text-gray-400 mt-1">Digite o nome e clique em + para adicionar vários</p>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+            <input type="text" id="pr-telefone" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+            <input type="email" id="pr-email" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50">
+          </div>
+        </div>
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+          <input type="password" id="pr-senha" required minlength="6" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50">
+        </div>
+        <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl">Criar conta</button>
+      </form>
+    </div>
+    <p class="text-center text-sm text-gray-500 mt-6">Já tem conta? <a href="login.html" class="text-blue-600 font-medium">Entrar</a></p>
+  </main>
+
+  <script>
+    var hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('p-nascimento').setAttribute('max', hoje);
+    document.getElementById('pr-nascimento').setAttribute('max', hoje);
+
+    var fotos = { p: null, pr: null };
+    var hospitaisList = [];
+
+    function addHospital() {
+      var input = document.getElementById('pr-hospital-input');
+      var nome = input.value.trim();
+      if (!nome) return;
+      if (hospitaisList.indexOf(nome) >= 0) { alert('Hospital já adicionado.'); return; }
+      hospitaisList.push(nome);
+      input.value = '';
+      renderHospitais();
+    }
+    function removeHospital(i) {
+      hospitaisList.splice(i, 1);
+      renderHospitais();
+    }
+    function renderHospitais() {
+      document.getElementById('pr-hospitais-lista').innerHTML = hospitaisList.map(function(h, i) {
+        return '<span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">' + h +
+          ' <button type="button" onclick="removeHospital(' + i + ')" class="text-red-500 text-xs font-bold">✕</button></span>';
+      }).join('');
+      document.getElementById('pr-hospital').value = hospitaisList.join(', ');
+    }
+
+    function previewFoto(input, prefix) {
+      var file = input.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) { alert('Selecione uma imagem.'); return; }
+      if (file.size > 2 * 1024 * 1024) { alert('Máximo 2 MB.'); return; }
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        fotos[prefix] = e.target.result;
+        document.getElementById(prefix + '-foto-img').src = e.target.result;
+        document.getElementById(prefix + '-foto-img').classList.remove('hidden');
+        document.getElementById(prefix + '-foto-icon').classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function validarNascimento(valor) {
+      if (!valor) return false;
+      var data = new Date(valor + 'T00:00:00');
+      var agora = new Date(); agora.setHours(0,0,0,0);
+      if (data > agora) { alert('A data de nascimento não pode ser no futuro.'); return false; }
+      return true;
+    }
+
+    if (new URLSearchParams(location.search).get('tipo') === 'profissional') trocarTipo('profissional');
+
+    function trocarTipo(tipo) {
+      var formPac = document.getElementById('form-paciente');
+      var formPro = document.getElementById('form-profissional');
+      var tabPac = document.getElementById('tab-paciente');
+      var tabPro = document.getElementById('tab-profissional');
+      if (tipo === 'paciente') {
+        formPac.classList.remove('hidden');
+        formPro.classList.add('hidden');
+        tabPac.className = 'flex-1 py-2.5 rounded-lg text-sm font-medium bg-blue-600 text-white';
+        tabPro.className = 'flex-1 py-2.5 rounded-lg text-sm font-medium text-gray-600';
+      } else {
+        formPro.classList.remove('hidden');
+        formPac.classList.add('hidden');
+        tabPro.className = 'flex-1 py-2.5 rounded-lg text-sm font-medium bg-blue-600 text-white';
+        tabPac.className = 'flex-1 py-2.5 rounded-lg text-sm font-medium text-gray-600';
+      }
+    }
+
+    function cadastrarPaciente(e) {
+      e.preventDefault();
+      if (!validarNascimento(document.getElementById('p-nascimento').value)) return;
+      var usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      var email = document.getElementById('p-email').value.trim();
+      if (usuarios.find(function(u){ return u.email === email; })) { alert('E-mail já cadastrado.'); return; }
+      var novo = {
+        id: Date.now().toString(), tipo: 'paciente',
+        nome: document.getElementById('p-nome').value.trim(),
+        cpf: document.getElementById('p-cpf').value.trim(),
+        nascimento: document.getElementById('p-nascimento').value,
+        endereco: document.getElementById('p-endereco').value.trim(),
+        telefone: document.getElementById('p-telefone').value.trim(),
+        sus: document.getElementById('p-sus').value.trim(),
+        email: email, senha: document.getElementById('p-senha').value, foto: fotos.p || null
+      };
+      usuarios.push(novo);
+      localStorage.setItem('usuarios', JSON.stringify(usuarios));
+      localStorage.setItem('usuarioLogado', JSON.stringify(novo));
+      window.location.href = 'paciente/exames.html';
+    }
+
+    function cadastrarProfissional(e) {
+      e.preventDefault();
+      if (!validarNascimento(document.getElementById('pr-nascimento').value)) return;
+      if (!hospitaisList.length) { alert('Adicione pelo menos um hospital (digite o nome e clique em +).'); return; }
+      var usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      var email = document.getElementById('pr-email').value.trim();
+      var crm = document.getElementById('pr-crm').value.trim();
+      if (usuarios.find(function(u){ return u.email === email || u.crm === crm; })) { alert('E-mail ou CRM já cadastrado.'); return; }
+      var novo = {
+        id: Date.now().toString(), tipo: 'profissional', crm: crm,
+        nome: document.getElementById('pr-nome').value.trim(),
+        cpf: document.getElementById('pr-cpf').value.trim(),
+        nascimento: document.getElementById('pr-nascimento').value,
+        hospital: document.getElementById('pr-hospital').value.trim(),
+        hospitais: hospitaisList.slice(),
+        telefone: document.getElementById('pr-telefone').value.trim(),
+        email: email, senha: document.getElementById('pr-senha').value, foto: fotos.pr || null
+      };
+      usuarios.push(novo);
+      localStorage.setItem('usuarios', JSON.stringify(usuarios));
+      localStorage.setItem('usuarioLogado', JSON.stringify(novo));
+      window.location.href = 'profissional/agenda.html';
+    }
+  </script>
+</body>
+</html>

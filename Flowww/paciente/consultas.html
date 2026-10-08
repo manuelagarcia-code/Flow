@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consultas - Flow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <div class="flex min-h-screen">
+    <aside class="w-64 bg-[#0f2b5b] text-white flex flex-col">
+      <div class="p-5 border-b border-white/10">
+        <div class="flex items-center gap-2 mb-6">
+          <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
+            <svg viewBox="0 0 24 24" class="w-5 h-5 text-white" fill="currentColor"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z"/></svg>
+          </div>
+          <span class="font-semibold">Flow</span>
+        </div>
+        <div class="relative">
+          <button type="button" onclick="toggleMenuUsuario()" class="flex items-center gap-3 w-full text-left hover:bg-white/10 rounded-xl p-1 -m-1">
+            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden shrink-0" id="avatar-box">
+              <span id="iniciais">JM</span>
+              <img id="foto-usuario" class="hidden w-full h-full object-cover" alt="">
+            </div>
+            <div class="min-w-0">
+              <p class="font-medium text-sm truncate" id="nome-usuario">Paciente</p>
+              <p class="text-blue-200 text-xs">Paciente</p>
+            </div>
+          </button>
+          <div id="menu-usuario" class="hidden absolute left-0 right-0 top-full mt-2 bg-white text-gray-800 rounded-xl shadow-xl border z-50 overflow-hidden">
+            <label class="flex items-center gap-2 px-4 py-3 text-sm hover:bg-gray-50 cursor-pointer border-b">
+              <span>📷 Alterar foto</span>
+              <input type="file" accept="image/*" class="hidden" onchange="trocarFoto(this)">
+            </label>
+            <button type="button" onclick="excluirConta()" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50">🗑️ Excluir conta</button>
+          </div>
+        </div>
+      </div>
+      <nav class="flex-1 p-4 space-y-1 text-sm">
+        <a href="exames.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10 relative">Exames <span id="badge-exames" class="hidden ml-auto w-2.5 h-2.5 bg-red-500 rounded-full"></span></a>
+        <a href="historico.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10 relative">Histórico <span id="badge-hist" class="hidden ml-auto w-2.5 h-2.5 bg-red-500 rounded-full"></span></a>
+        <a href="medicamentos.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10 relative">Medicamentos <span id="badge-meds" class="hidden ml-auto w-2.5 h-2.5 bg-red-500 rounded-full"></span></a>
+        <a href="consultas.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-blue-600 text-white">Consultas</a>
+        <a href="chat.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10 relative">Chat <span id="badge-chat" class="hidden ml-auto w-2.5 h-2.5 bg-red-500 rounded-full"></span></a>
+      </nav>
+      <div class="p-4 border-t border-white/10"><button onclick="sair()" class="text-blue-200 hover:text-white text-sm">Sair</button></div>
+    </aside>
+
+    <main class="flex-1 p-8" id="view-lista">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold">Consultas</h1>
+        <button onclick="iniciarAgendamento()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium">+ Novo agendamento</button>
+      </div>
+      <div id="lista-consultas" class="space-y-3 max-w-3xl"></div>
+    </main>
+
+    <main class="flex-1 p-8 hidden" id="view-wizard">
+      <button onclick="voltarLista()" class="text-sm text-gray-500 mb-2 hover:text-gray-800">← Voltar</button>
+      <p class="text-sm text-gray-500 mb-1">Novo agendamento</p>
+      <p class="text-xs text-gray-400 mb-4" id="etapa-label">Etapa 1 de 4</p>
+      <div class="flex gap-1 mb-6 max-w-md">
+        <div id="bar1" class="h-1.5 flex-1 rounded-full bg-blue-600"></div>
+        <div id="bar2" class="h-1.5 flex-1 rounded-full bg-gray-200"></div>
+        <div id="bar3" class="h-1.5 flex-1 rounded-full bg-gray-200"></div>
+        <div id="bar4" class="h-1.5 flex-1 rounded-full bg-gray-200"></div>
+      </div>
+
+      <div id="step1" class="max-w-xl">
+        <p class="font-medium mb-3">Especialidade desejada</p>
+        <div class="grid grid-cols-2 gap-2 mb-6" id="especialidades"></div>
+        <p class="font-medium mb-3">Tipo de consulta</p>
+        <div class="space-y-2 mb-6" id="tipos"></div>
+        <button onclick="irStep(2)" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium">Continuar →</button>
+      </div>
+
+      <div id="step2" class="max-w-xl hidden">
+        <div class="bg-blue-50 text-blue-800 text-sm px-4 py-2 rounded-xl mb-4" id="resumo-step2"></div>
+        <div id="lista-medicos" class="space-y-3 mb-6"></div>
+        <div class="flex gap-3">
+          <button onclick="irStep(1)" class="flex-1 py-2.5 border border-gray-200 rounded-xl">Voltar</button>
+          <button onclick="irStep(3)" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium">Continuar →</button>
+        </div>
+      </div>
+
+      <div id="step3" class="max-w-xl hidden">
+        <div class="bg-white border rounded-xl p-4 mb-4 flex items-center gap-3">
+          <div class="w-10 h-10 bg-[#0f2b5b] text-white rounded-full flex items-center justify-center text-sm font-bold" id="med-iniciais"></div>
+          <div>
+            <p class="font-medium text-sm" id="med-nome"></p>
+            <p class="text-xs text-gray-500" id="med-esp"></p>
+          </div>
+        </div>
+        <p class="font-medium mb-2">Datas disponíveis</p>
+        <div class="flex gap-2 mb-4 flex-wrap" id="datas"></div>
+        <p class="font-medium mb-2">Horários disponíveis</p>
+        <div class="flex flex-wrap gap-2 mb-6" id="horarios"></div>
+        <div class="flex gap-3">
+          <button onclick="irStep(2)" class="flex-1 py-2.5 border border-gray-200 rounded-xl">Voltar</button>
+          <button onclick="irStep(4)" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium">Continuar →</button>
+        </div>
+      </div>
+
+      <div id="step4" class="max-w-xl hidden">
+        <div class="bg-[#0f2b5b] text-white rounded-t-2xl px-5 py-3 font-medium">Resumo do agendamento</div>
+        <div class="bg-white border border-t-0 rounded-b-2xl p-5 text-sm space-y-2 mb-4">
+          <div class="flex justify-between"><span class="text-gray-500">Especialidade</span><span id="r-esp"></span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Tipo</span><span id="r-tipo"></span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Profissional</span><span id="r-med"></span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Hospital</span><span id="r-hosp"></span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Data</span><span id="r-data"></span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Horário</span><span id="r-hora"></span></div>
+        </div>
+        <label class="block text-sm text-gray-600 mb-1">Observações (opcional)</label>
+        <textarea id="obs" rows="2" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 mb-4"></textarea>
+        <div class="flex gap-3">
+          <button onclick="irStep(3)" class="flex-1 py-2.5 border border-gray-200 rounded-xl">Voltar</button>
+          <button onclick="confirmar()" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium">✓ Confirmar</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem('usuarioLogado') || 'null');
+    if (!user || user.tipo !== 'paciente') window.location.href = '../login.html';
+    else {
+      document.getElementById('nome-usuario').textContent = user.nome;
+      const n = user.nome.split(' ');
+      document.getElementById('iniciais').textContent = (n[0][0] + (n[1] ? n[1][0] : '')).toUpperCase();
+      if (user.foto) {
+        document.getElementById('foto-usuario').src = user.foto;
+        document.getElementById('foto-usuario').classList.remove('hidden');
+        document.getElementById('iniciais').classList.add('hidden');
+      }
+    }
+    const _notif = JSON.parse(localStorage.getItem('notif_' + user.id) || '{}');
+    if (_notif.medicamentos) document.getElementById('badge-meds').classList.remove('hidden');
+    if (_notif.historico) document.getElementById('badge-hist').classList.remove('hidden');
+    if (_notif.chat) document.getElementById('badge-chat').classList.remove('hidden');
+    if (_notif.exames) document.getElementById('badge-exames').classList.remove('hidden');
+
+    const estado = { especialidade: '', tipo: '', medico: null, data: '', hora: '', dataLabel: '' };
+    const especialidades = ['Clínica Geral','Cardiologia','Dermatologia','Gastroenterologia','Ginecologia','Neurologia','Oftalmologia','Ortopedia','Pediatria','Psiquiatria'];
+    const tipos = ['Consulta de rotina','Retorno','Urgência','Primeira consulta','Acompanhamento'];
+    const datasDisp = [{label:'22/09', val:'2026-09-22'},{label:'26/09', val:'2026-09-26'},{label:'29/09', val:'2026-09-29'}];
+    const horasDisp = ['08:00','09:00','10:00','14:00','15:00','16:00'];
+
+    function listarMedicos() {
+      var padrao = [
+        {id:'prof_ms', nome:'Dra. Marina Santos', crm:'CRM/SP 33290', hospital:'Clínica DermaPele', especialidade:'Dermatologia', iniciais:'MS'},
+        {id:'prof_fc', nome:'Dra. Fernanda Costa', crm:'CRM/SP 22110', hospital:'Hospital das Clínicas', especialidade:'Clínica Geral', iniciais:'FC'},
+        {id:'prof_pr', nome:'Dr. Paulo Ribeiro', crm:'CRM/SP 15400', hospital:'Hospital São José', especialidade:'Cardiologia', iniciais:'PR'}
+      ];
+      var users = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      var all = JSON.parse(localStorage.getItem('disponibilidades_global') || '{}');
+      var cadastrados = users.filter(function(u){ return u.tipo === 'profissional'; }).map(function(u){
+        var hosp = u.hospital || (u.hospitais && u.hospitais.join ? u.hospitais.join(', ') : '') || '—';
+        var esp = (all[u.id] && all[u.id].especialidade) || 'Clínica Geral';
+        return {
+          id: u.id, nome: u.nome, crm: u.crm || '', hospital: hosp, especialidade: esp,
+          iniciais: u.nome.split(' ').map(function(x){return x[0];}).slice(0,2).join('').toUpperCase()
+        };
+      });
+      var ids = {};
+      cadastrados.forEach(function(c){ ids[c.id]=true; });
+      return cadastrados.concat(padrao.filter(function(p){ return !ids[p.id]; }));
+    }
+    var medicos = listarMedicos();
+
+    document.getElementById('especialidades').innerHTML = especialidades.map(function(e){
+      return '<button type="button" onclick="selEsp(this,\''+e+'\')" class="esp-btn px-3 py-2.5 border border-gray-200 rounded-xl text-sm hover:border-blue-400">'+e+'</button>';
+    }).join('');
+    document.getElementById('tipos').innerHTML = tipos.map(function(t){
+      return '<label class="flex items-center gap-3 px-4 py-2.5 border border-gray-200 rounded-xl cursor-pointer"><input type="radio" name="tipo" value="'+t+'" onchange="estado.tipo=\''+t+'\'" class="accent-blue-600"> <span class="text-sm">'+t+'</span></label>';
+    }).join('');
+
+    function selEsp(btn, e) {
+      estado.especialidade = e;
+      document.querySelectorAll('.esp-btn').forEach(function(b){ b.classList.remove('border-blue-600','bg-blue-50','text-blue-700'); });
+      btn.classList.add('border-blue-600','bg-blue-50','text-blue-700');
+    }
+
+    function irStep(n) {
+      if (n===2 && (!estado.especialidade||!estado.tipo)) { alert('Selecione especialidade e tipo.'); return; }
+      if (n===3 && !estado.medico) { alert('Selecione um profissional.'); return; }
+      if (n===4 && (!estado.data||!estado.hora)) { alert('Selecione data e horário.'); return; }
+      [1,2,3,4].forEach(function(i){
+        document.getElementById('step'+i).classList.toggle('hidden', i!==n);
+        document.getElementById('bar'+i).className = 'h-1.5 flex-1 rounded-full '+(i<=n?'bg-blue-600':'bg-gray-200');
+      });
+      document.getElementById('etapa-label').textContent = 'Etapa '+n+' de 4';
+
+      if (n===2) {
+        document.getElementById('resumo-step2').textContent = estado.especialidade+' · '+estado.tipo;
+        medicos = listarMedicos();
+        var lista = medicos.filter(function(m){
+          return m.especialidade===estado.especialidade || estado.especialidade==='Clínica Geral' || !m.especialidade;
+        });
+        if (!lista.length) lista = medicos;
+        document.getElementById('lista-medicos').innerHTML = lista.map(function(m){
+          return '<div onclick=\'selMed('+JSON.stringify(m)+')\' class="bg-white border rounded-xl p-4 cursor-pointer hover:border-blue-400 flex items-center gap-3 med-card"><div class="w-10 h-10 bg-[#0f2b5b] text-white rounded-full flex items-center justify-center text-sm font-bold">'+m.iniciais+'</div><div class="flex-1"><p class="font-medium text-sm">'+m.nome+'</p><p class="text-xs text-gray-500">'+m.crm+' · '+m.hospital+'</p></div></div>';
+        }).join('');
+      }
+
+      if (n===3) {
+        document.getElementById('med-iniciais').textContent = estado.medico.iniciais;
+        document.getElementById('med-nome').textContent = estado.medico.nome;
+        document.getElementById('med-esp').textContent = estado.medico.especialidade;
+        var all = JSON.parse(localStorage.getItem('disponibilidades_global') || '{}');
+        var slots = [];
+        Object.keys(all).forEach(function(id) {
+          var p = all[id];
+          if (p && p.slots && p.slots.length) {
+            p.slots.forEach(function(s) {
+              slots.push({ data: s.data, hora: s.hora, especialidade: s.especialidade || p.especialidade || '', profId: id });
+            });
+          }
+        });
+        var doMedico = slots.filter(function(s){ return estado.medico.id && s.profId === estado.medico.id; });
+        if (doMedico.length) slots = doMedico;
+        var datasMap = {};
+        slots.forEach(function(s){ datasMap[s.data] = true; });
+        var datasKeys = Object.keys(datasMap).sort();
+        var datas = datasKeys.length ? datasKeys.map(function(d){
+          var parts = d.split('-');
+          return { label: parts[2]+'/'+parts[1]+'/'+parts[0], val: d };
+        }) : datasDisp;
+        document.getElementById('datas').innerHTML = datas.map(function(d){
+          return '<button type="button" onclick="selData(this,\''+d.val+'\',\''+d.label+'\')" class="data-btn px-4 py-3 border rounded-xl text-center text-sm border-gray-200">'+d.label+'</button>';
+        }).join('') || '<p class="text-sm text-amber-600">Nenhum horário. Peça ao profissional para cadastrar em Disponibilidade.</p>';
+        var horasUnicas = {};
+        slots.forEach(function(s){ horasUnicas[s.hora]=true; });
+        var horas = Object.keys(horasUnicas).sort();
+        if (!horas.length) horas = horasDisp;
+        document.getElementById('horarios').innerHTML = horas.map(function(h){
+          return '<button type="button" onclick="selHora(this,\''+h+'\')" class="hora-btn px-4 py-2 border rounded-xl text-sm border-gray-200">'+h+'</button>';
+        }).join('');
+      }
+
+      if (n===4) {
+        document.getElementById('r-esp').textContent = estado.especialidade;
+        document.getElementById('r-tipo').textContent = estado.tipo;
+        document.getElementById('r-med').textContent = estado.medico.nome;
+        document.getElementById('r-hosp').textContent = estado.medico.hospital;
+        document.getElementById('r-data').textContent = estado.dataLabel || estado.data;
+        document.getElementById('r-hora').textContent = estado.hora;
+      }
+    }
+
+    function selMed(m){
+      estado.medico=m;
+      document.querySelectorAll('.med-card').forEach(function(c){ c.classList.remove('border-blue-600','bg-blue-50'); });
+      if (event && event.currentTarget) event.currentTarget.classList.add('border-blue-600','bg-blue-50');
+    }
+    function selData(btn,val,label){
+      estado.data=val; estado.dataLabel=label;
+      document.querySelectorAll('.data-btn').forEach(function(b){ b.className='data-btn px-4 py-3 border rounded-xl text-center text-sm border-gray-200'; });
+      btn.className='data-btn px-4 py-3 border rounded-xl text-center text-sm bg-blue-600 text-white border-blue-600';
+      var all = JSON.parse(localStorage.getItem('disponibilidades_global') || '{}');
+      var horas = [];
+      Object.keys(all).forEach(function(id) {
+        var p = all[id];
+        if (p.slots) p.slots.forEach(function(s) {
+          if (s.data === val) {
+            if (!estado.medico.id || id === estado.medico.id) horas.push(s.hora);
+          }
+        });
+      });
+      horas = horas.filter(function(h,i,a){ return a.indexOf(h)===i; }).sort();
+      if (!horas.length) horas = horasDisp;
+      estado.hora = '';
+      document.getElementById('horarios').innerHTML = horas.map(function(h) {
+        return '<button type="button" onclick="selHora(this,\''+h+'\')" class="hora-btn px-4 py-2 border rounded-xl text-sm border-gray-200">'+h+'</button>';
+      }).join('');
+    }
+    function selHora(btn,h){
+      estado.hora=h;
+      document.querySelectorAll('.hora-btn').forEach(function(b){ b.className='hora-btn px-4 py-2 border rounded-xl text-sm border-gray-200'; });
+      btn.className='hora-btn px-4 py-2 border rounded-xl text-sm bg-blue-600 text-white border-blue-600';
+    }
+    function iniciarAgendamento(){
+      document.getElementById('view-lista').classList.add('hidden');
+      document.getElementById('view-wizard').classList.remove('hidden');
+      irStep(1);
+    }
+    function voltarLista(){
+      document.getElementById('view-wizard').classList.add('hidden');
+      document.getElementById('view-lista').classList.remove('hidden');
+      carregar();
+    }
+    function confirmar(){
+      var consultas = JSON.parse(localStorage.getItem('consultas_'+user.id)||'[]');
+      consultas.push({
+        id: Date.now().toString(), medico: estado.medico.nome, especialidade: estado.especialidade,
+        hospital: estado.medico.hospital, data: estado.data, hora: estado.hora, tipo: estado.tipo,
+        status: 'Agendado', obs: document.getElementById('obs').value
+      });
+      localStorage.setItem('consultas_'+user.id, JSON.stringify(consultas));
+      alert('Consulta agendada com sucesso!');
+      voltarLista();
+    }
+    function carregar(){
+      var padrao = [
+        {medico:'Dra. Fernanda Costa', especialidade:'Clínica Geral', hospital:'Hospital das Clínicas', data:'2026-09-15', hora:'09:30', status:'Confirmado'},
+        {medico:'Dr. Paulo Ribeiro', especialidade:'Cardiologia', hospital:'Hospital São José', data:'2026-10-28', hora:'14:00', status:'Agendado'}
+      ];
+      var consultas = JSON.parse(localStorage.getItem('consultas_'+user.id)||'null');
+      if (!consultas) { consultas=padrao; localStorage.setItem('consultas_'+user.id, JSON.stringify(consultas)); }
+      var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      document.getElementById('lista-consultas').innerHTML = consultas.map(function(c){
+        var d = new Date(c.data+'T00:00:00');
+        var sc = c.status==='Confirmado'?'bg-green-100 text-green-700':'bg-blue-100 text-blue-700';
+        return '<div class="bg-white rounded-2xl border p-4 flex items-center justify-between"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-50 rounded-xl flex flex-col items-center justify-center text-blue-700 text-xs font-bold"><span>'+String(d.getDate()).padStart(2,'0')+'</span><span>'+meses[d.getMonth()]+'</span></div><div><p class="font-medium text-sm">'+c.medico+'</p><p class="text-xs text-gray-500">'+c.especialidade+' · '+c.hospital+'</p><p class="text-xs text-gray-500">'+c.data.split('-').reverse().join('/')+' às '+c.hora+'</p></div></div><span class="px-2.5 py-0.5 '+sc+' text-xs rounded-full">'+c.status+'</span></div>';
+      }).join('') || '<p class="text-gray-500 text-sm">Nenhuma consulta.</p>';
+    }
+    function toggleMenuUsuario(){ document.getElementById('menu-usuario').classList.toggle('hidden'); }
+    document.addEventListener('click', function(e){ var m=document.getElementById('menu-usuario'); if(m&&!e.target.closest('.relative')) m.classList.add('hidden'); });
+    function trocarFoto(input){
+      var file=input.files[0]; if(!file)return;
+      if(!file.type.startsWith('image/')){alert('Selecione uma imagem.');return;}
+      if(file.size>2*1024*1024){alert('Máximo 2 MB.');return;}
+      var reader=new FileReader();
+      reader.onload=function(e){
+        var foto=e.target.result; user.foto=foto;
+        localStorage.setItem('usuarioLogado',JSON.stringify(user));
+        var usuarios=JSON.parse(localStorage.getItem('usuarios')||'[]');
+        var i=usuarios.findIndex(function(u){return u.id===user.id;});
+        if(i>=0){usuarios[i].foto=foto;localStorage.setItem('usuarios',JSON.stringify(usuarios));}
+        document.getElementById('foto-usuario').src=foto;
+        document.getElementById('foto-usuario').classList.remove('hidden');
+        document.getElementById('iniciais').classList.add('hidden');
+        document.getElementById('menu-usuario').classList.add('hidden');
+        alert('Foto atualizada!');
+      };
+      reader.readAsDataURL(file);
+    }
+    function excluirConta(){
+      if(!confirm('Excluir sua conta? Não dá para desfazer.'))return;
+      if(!confirm('Confirma a exclusão definitiva?'))return;
+      var id=user.id;
+      localStorage.setItem('usuarios',JSON.stringify(JSON.parse(localStorage.getItem('usuarios')||'[]').filter(function(u){return u.id!==id;})));
+      localStorage.removeItem('usuarioLogado');
+      alert('Conta excluída.'); window.location.href='../index.html';
+    }
+    function sair(){ localStorage.removeItem('usuarioLogado'); window.location.href='../index.html'; }
+    carregar();
+  </script>
+</body>
+</html>

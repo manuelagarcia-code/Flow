@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscar Paciente - Flow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <div class="flex min-h-screen">
+    <aside class="w-64 bg-[#0f2b5b] text-white flex flex-col">
+      <div class="p-5 border-b border-white/10">
+        <div class="flex items-center gap-2 mb-6">
+          <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
+            <svg viewBox="0 0 24 24" class="w-5 h-5 text-white" fill="currentColor"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z"/></svg>
+          </div>
+          <span class="font-semibold">Flow</span>
+        </div>
+        <div class="relative">
+          <button type="button" onclick="toggleMenuUsuario()" class="flex items-center gap-3 w-full text-left hover:bg-white/10 rounded-xl p-1 -m-1">
+            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden shrink-0" id="avatar-box">
+              <span id="iniciais">DM</span>
+              <img id="foto-usuario" class="hidden w-full h-full object-cover" alt="">
+            </div>
+            <div class="min-w-0">
+              <p class="font-medium text-sm truncate" id="nome-usuario">Dr.</p>
+              <p class="text-blue-200 text-xs" id="crm-usuario">CRM</p>
+            </div>
+          </button>
+          <div id="menu-usuario" class="hidden absolute left-0 right-0 top-full mt-2 bg-white text-gray-800 rounded-xl shadow-xl border z-50 overflow-hidden">
+            <label class="flex items-center gap-2 px-4 py-3 text-sm hover:bg-gray-50 cursor-pointer border-b">
+              <span>📷 Alterar foto</span>
+              <input type="file" accept="image/*" class="hidden" onchange="trocarFoto(this)">
+            </label>
+            <button type="button" onclick="excluirConta()" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50">🗑️ Excluir conta</button>
+          </div>
+        </div>
+      </div>
+      <nav class="flex-1 p-4 space-y-1 text-sm">
+        <a href="agenda.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10">Agenda</a>
+        <a href="buscar.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-blue-600 text-white">Buscar Paciente</a>
+        <a href="relatorio.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10">Relatório</a>
+        <a href="prescrever.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10">Prescrever</a>
+        <a href="mensagens.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10">Mensagens</a>
+        <a href="disponibilidade.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10">Disponibilidade</a>
+      </nav>
+      <div class="p-4 border-t border-white/10"><button onclick="sair()" class="text-blue-200 hover:text-white text-sm">Sair</button></div>
+    </aside>
+    <main class="flex-1 p-8">
+      <h1 class="text-2xl font-bold mb-6">Buscar Paciente</h1>
+      <input type="text" id="busca" placeholder="Digite o nome ou CPF..." class="w-full max-w-xl px-4 py-3 rounded-xl border border-gray-200 mb-4" oninput="buscar()">
+      <div id="resultado" class="space-y-3 max-w-xl"></div>
+      <div id="detalhes" class="hidden mt-6 bg-white rounded-2xl border p-6 max-w-xl">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg" id="det-iniciais"></div>
+          <div>
+            <h2 class="text-xl font-bold" id="det-nome"></h2>
+            <p class="text-gray-500 text-sm" id="det-cpf"></p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 text-sm mb-6">
+          <div><p class="text-gray-500">Nascimento</p><p class="font-medium" id="det-nasc">—</p></div>
+          <div><p class="text-gray-500">Telefone</p><p class="font-medium" id="det-tel">—</p></div>
+          <div><p class="text-gray-500">SUS</p><p class="font-medium" id="det-sus">—</p></div>
+          <div><p class="text-gray-500">E-mail</p><p class="font-medium" id="det-email">—</p></div>
+        </div>
+        <div class="flex gap-3 mb-6">
+          <button onclick="irRelatorio()" class="flex-1 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium">Escrever Relatório</button>
+          <button onclick="irPrescrever()" class="flex-1 py-2.5 border border-blue-600 text-blue-600 rounded-xl text-sm font-medium">Prescrever</button>
+        </div>
+        <div class="border-t pt-4">
+          <p class="font-medium text-sm mb-2">Exames do paciente</p>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <input id="ex-nome" placeholder="Nome do exame" class="px-3 py-2 rounded-lg border text-sm">
+            <input id="ex-status" placeholder="Status (Normal/Atenção)" class="px-3 py-2 rounded-lg border text-sm">
+            <input id="ex-lab" placeholder="Laboratório" class="px-3 py-2 rounded-lg border text-sm">
+            <input id="ex-data" type="date" class="px-3 py-2 rounded-lg border text-sm">
+          </div>
+          <textarea id="ex-detalhe" placeholder="Resultado / detalhes" rows="2" class="w-full px-3 py-2 rounded-lg border text-sm mb-2"></textarea>
+          <button type="button" onclick="addExame()" class="w-full py-2 bg-blue-50 text-blue-700 rounded-xl text-sm font-medium mb-3">+ Adicionar exame</button>
+          <div id="lista-exames-pac" class="space-y-2"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script>
+    const user = JSON.parse(localStorage.getItem('usuarioLogado') || 'null');
+    if (!user || user.tipo !== 'profissional') window.location.href = '../login.html';
+    else {
+      document.getElementById('nome-usuario').textContent = user.nome;
+      document.getElementById('crm-usuario').textContent = user.crm || '';
+      const n = user.nome.split(' ');
+      document.getElementById('iniciais').textContent = (n[0][0] + (n[1] ? n[1][0] : '')).toUpperCase();
+      if (user.foto) {
+        document.getElementById('foto-usuario').src = user.foto;
+        document.getElementById('foto-usuario').classList.remove('hidden');
+        document.getElementById('iniciais').classList.add('hidden');
+      }
+    }
+    let atual = null;
+    function buscar() {
+      const t = document.getElementById('busca').value.toLowerCase().trim();
+      const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      const pacs = usuarios.filter(function(u){ return u.tipo==='paciente' && (u.nome.toLowerCase().includes(t) || (u.cpf||'').includes(t)); });
+      document.getElementById('detalhes').classList.add('hidden');
+      const div = document.getElementById('resultado');
+      if (!t) { div.innerHTML=''; return; }
+      if (!pacs.length) { div.innerHTML='<p class="text-gray-500 text-sm">Nenhum paciente encontrado.</p>'; return; }
+      div.innerHTML = pacs.map(function(p){
+        return '<div onclick=\'ver('+JSON.stringify(p)+')\' class="bg-white rounded-xl border p-4 flex items-center gap-3 cursor-pointer hover:border-blue-400"><div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">'+p.nome.split(' ').map(function(x){return x[0];}).slice(0,2).join('').toUpperCase()+'</div><div><p class="font-medium text-sm">'+p.nome+'</p><p class="text-xs text-gray-500">CPF: '+(p.cpf||'—')+'</p></div></div>';
+      }).join('');
+    }
+    function ver(p) {
+      atual = p;
+      localStorage.setItem('pacienteSelecionado', JSON.stringify(p));
+      document.getElementById('det-iniciais').textContent = p.nome.split(' ').map(function(x){return x[0];}).slice(0,2).join('').toUpperCase();
+      document.getElementById('det-nome').textContent = p.nome;
+      document.getElementById('det-cpf').textContent = 'CPF: '+(p.cpf||'—');
+      document.getElementById('det-nasc').textContent = p.nascimento||'—';
+      document.getElementById('det-tel').textContent = p.telefone||'—';
+      document.getElementById('det-sus').textContent = p.sus||'—';
+      document.getElementById('det-email').textContent = p.email||'—';
+      document.getElementById('detalhes').classList.remove('hidden');
+      document.getElementById('resultado').innerHTML = '';
+      carregarExamesPac();
+    }
+    function irRelatorio(){ if(atual) window.location.href='relatorio.html'; }
+    function irPrescrever(){ if(atual) window.location.href='prescrever.html'; }
+
+    function carregarExamesPac() {
+      if (!atual) return;
+      var lista = JSON.parse(localStorage.getItem('exames_' + atual.id) || '[]');
+      var div = document.getElementById('lista-exames-pac');
+      if (!lista.length) { div.innerHTML = '<p class="text-xs text-gray-400">Nenhum exame cadastrado por você.</p>'; return; }
+      div.innerHTML = lista.map(function(ex, i) {
+        return '<div class="bg-gray-50 rounded-lg p-3 flex justify-between gap-2 text-sm"><div><p class="font-medium">'+ex.nome+'</p><p class="text-xs text-gray-500">'+ex.status+' · '+ex.data+'</p></div>'+
+          '<div class="flex gap-2"><button type="button" onclick="editarExame('+i+')" class="text-xs text-blue-600">Editar</button><button type="button" onclick="excluirExame('+i+')" class="text-xs text-red-600">Excluir</button></div></div>';
+      }).join('');
+    }
+    function addExame() {
+      if (!atual) return;
+      var nome = document.getElementById('ex-nome').value.trim();
+      if (!nome) { alert('Informe o nome do exame.'); return; }
+      var status = document.getElementById('ex-status').value.trim() || 'Normal';
+      var sc = status.toLowerCase().indexOf('aten') >= 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700';
+      var data = document.getElementById('ex-data').value;
+      if (data) { var p = data.split('-'); data = p[2]+'/'+p[1]+'/'+p[0]; }
+      else data = new Date().toLocaleDateString('pt-BR');
+      var lista = JSON.parse(localStorage.getItem('exames_' + atual.id) || '[]');
+      lista.unshift({
+        nome: nome, lab: document.getElementById('ex-lab').value.trim() || '—',
+        data: data, status: status, statusClass: sc,
+        detalhe: document.getElementById('ex-detalhe').value.trim() || ''
+      });
+      localStorage.setItem('exames_' + atual.id, JSON.stringify(lista));
+      var notif = JSON.parse(localStorage.getItem('notif_' + atual.id) || '{}');
+      notif.exames = (notif.exames || 0) + 1;
+      localStorage.setItem('notif_' + atual.id, JSON.stringify(notif));
+      document.getElementById('ex-nome').value = '';
+      document.getElementById('ex-status').value = '';
+      document.getElementById('ex-lab').value = '';
+      document.getElementById('ex-detalhe').value = '';
+      carregarExamesPac();
+      alert('Exame adicionado! O paciente verá a bolinha vermelha em Exames.');
+    }
+    function excluirExame(i) {
+      if (!confirm('Excluir exame?')) return;
+      var lista = JSON.parse(localStorage.getItem('exames_' + atual.id) || '[]');
+      lista.splice(i, 1);
+      localStorage.setItem('exames_' + atual.id, JSON.stringify(lista));
+      carregarExamesPac();
+    }
+    function editarExame(i) {
+      var lista = JSON.parse(localStorage.getItem('exames_' + atual.id) || '[]');
+      var ex = lista[i];
+      var nome = prompt('Nome:', ex.nome); if (nome === null) return;
+      var status = prompt('Status:', ex.status); if (status === null) return;
+      var det = prompt('Detalhes:', ex.detalhe || ''); if (det === null) return;
+      lista[i].nome = nome.trim() || ex.nome;
+      lista[i].status = status.trim() || ex.status;
+      lista[i].detalhe = det.trim();
+      lista[i].statusClass = (lista[i].status||'').toLowerCase().indexOf('aten')>=0 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700';
+      localStorage.setItem('exames_' + atual.id, JSON.stringify(lista));
+      carregarExamesPac();
+    }
+
+    function toggleMenuUsuario(){ document.getElementById('menu-usuario').classList.toggle('hidden'); }
+    document.addEventListener('click', function(e){ const m=document.getElementById('menu-usuario'); if(m&&!e.target.closest('.relative')) m.classList.add('hidden'); });
+    function trocarFoto(input){
+      const file=input.files[0]; if(!file)return;
+      if(!file.type.startsWith('image/')){alert('Selecione uma imagem.');return;}
+      if(file.size>2*1024*1024){alert('Máximo 2 MB.');return;}
+      const reader=new FileReader();
+      reader.onload=function(e){
+        const foto=e.target.result; user.foto=foto;
+        localStorage.setItem('usuarioLogado',JSON.stringify(user));
+        const usuarios=JSON.parse(localStorage.getItem('usuarios')||'[]');
+        const i=usuarios.findIndex(function(u){return u.id===user.id;});
+        if(i>=0){usuarios[i].foto=foto;localStorage.setItem('usuarios',JSON.stringify(usuarios));}
+        document.getElementById('foto-usuario').src=foto;
+        document.getElementById('foto-usuario').classList.remove('hidden');
+        document.getElementById('iniciais').classList.add('hidden');
+        document.getElementById('menu-usuario').classList.add('hidden');
+        alert('Foto atualizada!');
+      };
+      reader.readAsDataURL(file);
+    }
+    function excluirConta(){
+      if(!confirm('Excluir sua conta? Não dá para desfazer.'))return;
+      if(!confirm('Confirma a exclusão definitiva?'))return;
+      const id=user.id;
+      localStorage.setItem('usuarios',JSON.stringify(JSON.parse(localStorage.getItem('usuarios')||'[]').filter(function(u){return u.id!==id;})));
+      localStorage.removeItem('usuarioLogado');
+      alert('Conta excluída.'); window.location.href='../index.html';
+    }
+    function sair(){ localStorage.removeItem('usuarioLogado'); window.location.href='../index.html'; }
+  </script>
+</body>
+</html> 

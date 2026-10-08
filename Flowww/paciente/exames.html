@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exames - Flow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <div class="flex min-h-screen">
+    <aside class="w-64 bg-[#0f2b5b] text-white flex flex-col">
+      <div class="p-5 border-b border-white/10">
+        <div class="flex items-center gap-2 mb-6">
+          <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
+            <svg viewBox="0 0 24 24" class="w-5 h-5 text-white" fill="currentColor"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z"/></svg>
+          </div>
+          <span class="font-semibold">Flow</span>
+        </div>
+        <div class="relative">
+          <button type="button" onclick="toggleMenuUsuario()" class="flex items-center gap-3 w-full text-left hover:bg-white/10 rounded-xl p-1 -m-1">
+            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden shrink-0" id="avatar-box">
+              <span id="iniciais">JM</span>
+              <img id="foto-usuario" class="hidden w-full h-full object-cover" alt="">
+            </div>
+            <div class="min-w-0">
+              <p class="font-medium text-sm truncate" id="nome-usuario">Paciente</p>
+              <p class="text-blue-200 text-xs">Paciente</p>
+            </div>
+          </button>
+          <div id="menu-usuario" class="hidden absolute left-0 right-0 top-full mt-2 bg-white text-gray-800 rounded-xl shadow-xl border z-50 overflow-hidden">
+            <label class="flex items-center gap-2 px-4 py-3 text-sm hover:bg-gray-50 cursor-pointer border-b">
+              <span>📷 Alterar foto</span>
+              <input type="file" accept="image/*" class="hidden" onchange="trocarFoto(this)">
+            </label>
+            <button type="button" onclick="excluirConta()" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50">🗑️ Excluir conta</button>
+          </div>
+        </div>
+      </div>
+      <nav class="flex-1 p-4 space-y-1 text-sm">
+        <a href="exames.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-blue-600 text-white relative">Exames <span id="badge-exames" class="hidden ml-auto w-2.5 h-2.5 bg-red-500 rounded-full"></span></a>
+        <a href="historico.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10 relative">Histórico <span id="badge-hist" class="hidden ml-auto w-2.5 h-2.5 bg-red-500 rounded-full"></span></a>
+        <a href="medicamentos.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10 relative">Medicamentos <span id="badge-meds" class="hidden ml-auto w-2.5 h-2.5 bg-red-500 rounded-full"></span></a>
+        <a href="consultas.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10">Consultas</a>
+        <a href="chat.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-blue-100 hover:bg-white/10 relative">Chat <span id="badge-chat" class="hidden ml-auto w-2.5 h-2.5 bg-red-500 rounded-full"></span></a>
+      </nav>
+      <div class="p-4 border-t border-white/10"><button onclick="sair()" class="text-blue-200 hover:text-white text-sm">Sair</button></div>
+    </aside>
+    <main class="flex-1 p-8">
+      <h1 class="text-2xl font-bold text-gray-900 mb-6">Exames</h1>
+      <div class="space-y-3 max-w-3xl" id="lista-exames"></div>
+    </main>
+  </div>
+  <script>
+    const user = JSON.parse(localStorage.getItem('usuarioLogado') || 'null');
+    if (!user || user.tipo !== 'paciente') window.location.href = '../login.html';
+    else {
+      document.getElementById('nome-usuario').textContent = user.nome;
+      const n = user.nome.split(' ');
+      document.getElementById('iniciais').textContent = (n[0][0] + (n[1] ? n[1][0] : '')).toUpperCase();
+      if (user.foto) {
+        document.getElementById('foto-usuario').src = user.foto;
+        document.getElementById('foto-usuario').classList.remove('hidden');
+        document.getElementById('iniciais').classList.add('hidden');
+      }
+    }
+    const _notif = JSON.parse(localStorage.getItem('notif_' + user.id) || '{}');
+    if (_notif.medicamentos) document.getElementById('badge-meds').classList.remove('hidden');
+    if (_notif.historico) document.getElementById('badge-hist').classList.remove('hidden');
+    if (_notif.chat) document.getElementById('badge-chat').classList.remove('hidden');
+    if (_notif.exames) {
+      document.getElementById('badge-exames').classList.remove('hidden');
+      _notif.exames = 0;
+      localStorage.setItem('notif_' + user.id, JSON.stringify(_notif));
+      setTimeout(function(){ document.getElementById('badge-exames').classList.add('hidden'); }, 800);
+    }
+
+    const examesPadrao = [
+      {nome:'Hemograma Completo', lab:'Laboratório São Lucas', data:'10/06/2026', status:'Normal', statusClass:'bg-green-100 text-green-700', detalhe:'Hemácias: 4,8 mi/mm³ · Hemoglobina: 14,2 g/dL · Leucócitos: 7.200 · Plaquetas: 250.000.'},
+      {nome:'Colesterol e Triglicerídeos', lab:'Laboratório São Lucas', data:'10/06/2026', status:'Atenção', statusClass:'bg-yellow-100 text-yellow-700', detalhe:'Colesterol total: 218 mg/dL · LDL: 142 mg/dL · HDL: 48 mg/dL · Triglicerídeos: 156 mg/dL.'},
+      {nome:'Glicemia de Jejum', lab:'Laboratório São Lucas', data:'10/06/2026', status:'Normal', statusClass:'bg-green-100 text-green-700', detalhe:'Glicemia: 92 mg/dL (referência: 70–99 mg/dL).'},
+      {nome:'TSH e T4 Livre', lab:'Lab. Central', data:'22/04/2026', status:'Normal', statusClass:'bg-green-100 text-green-700', detalhe:'TSH: 2,1 mUI/L · T4 livre: 1,2 ng/dL. Função tireoidiana adequada.'},
+      {nome:'Vitamina D (25-OH)', lab:'Lab. Central', data:'22/04/2026', status:'Atenção', statusClass:'bg-yellow-100 text-yellow-700', detalhe:'25-OH vitamina D: 24 ng/mL (insuficiência leve). Recomenda-se suplementação.'},
+      {nome:'Creatinina e Ureia', lab:'Hospital das Clínicas', data:'15/01/2026', status:'Normal', statusClass:'bg-green-100 text-green-700', detalhe:'Creatinina: 0,9 mg/dL · Ureia: 32 mg/dL. Função renal preservada.'},
+      {nome:'Urina Tipo I', lab:'Laboratório São Lucas', data:'15/01/2026', status:'Normal', statusClass:'bg-green-100 text-green-700', detalhe:'Aspecto límpido · Densidade 1.015 · Sem proteínas, glicose ou sangue.'},
+      {nome:'Eletrocardiograma (ECG)', lab:'Hospital São José', data:'15/01/2026', status:'Normal', statusClass:'bg-green-100 text-green-700', detalhe:'Ritmo sinusal · FC 72 bpm · Sem alterações isquêmicas agudas.'}
+    ];
+    const examesSalvos = JSON.parse(localStorage.getItem('exames_' + user.id) || '[]');
+    const todosExames = examesSalvos.concat(examesPadrao);
+    document.getElementById('lista-exames').innerHTML = todosExames.map(function(ex){
+      return '<div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">'+
+        '<div class="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50" onclick="toggleDetalhe(this)">'+
+          '<div class="flex items-center gap-3"><div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-sm">🧪</div>'+
+          '<div><p class="font-medium text-sm">'+ex.nome+'</p><p class="text-xs text-gray-500">'+(ex.lab||'')+' · '+ex.data+'</p></div></div>'+
+          '<div class="flex items-center gap-2"><span class="px-2.5 py-0.5 '+(ex.statusClass||'bg-gray-100 text-gray-600')+' text-xs rounded-full">'+ex.status+'</span><span class="text-gray-400">▾</span></div></div>'+
+        '<div class="detalhe hidden px-4 pb-4 text-sm text-gray-600 border-t border-gray-50 pt-3">'+(ex.detalhe||'')+'</div></div>';
+    }).join('');
+
+    function toggleDetalhe(el) {
+      const d = el.parentElement.querySelector('.detalhe');
+      const s = el.querySelector('span:last-child');
+      d.classList.toggle('hidden');
+      s.textContent = d.classList.contains('hidden') ? '▾' : '▴';
+    }
+    function toggleMenuUsuario(){ document.getElementById('menu-usuario').classList.toggle('hidden'); }
+    document.addEventListener('click', function(e){ const m=document.getElementById('menu-usuario'); if(m&&!e.target.closest('.relative')) m.classList.add('hidden'); });
+    function trocarFoto(input){
+      const file=input.files[0]; if(!file)return;
+      if(!file.type.startsWith('image/')){alert('Selecione uma imagem.');return;}
+      if(file.size>2*1024*1024){alert('Máximo 2 MB.');return;}
+      const reader=new FileReader();
+      reader.onload=function(e){
+        const foto=e.target.result; user.foto=foto;
+        localStorage.setItem('usuarioLogado',JSON.stringify(user));
+        const usuarios=JSON.parse(localStorage.getItem('usuarios')||'[]');
+        const i=usuarios.findIndex(function(u){return u.id===user.id;});
+        if(i>=0){usuarios[i].foto=foto;localStorage.setItem('usuarios',JSON.stringify(usuarios));}
+        document.getElementById('foto-usuario').src=foto;
+        document.getElementById('foto-usuario').classList.remove('hidden');
+        document.getElementById('iniciais').classList.add('hidden');
+        document.getElementById('menu-usuario').classList.add('hidden');
+        alert('Foto atualizada!');
+      };
+      reader.readAsDataURL(file);
+    }
+    function excluirConta(){
+      if(!confirm('Excluir sua conta? Não dá para desfazer.'))return;
+      if(!confirm('Confirma a exclusão definitiva?'))return;
+      const id=user.id;
+      localStorage.setItem('usuarios',JSON.stringify(JSON.parse(localStorage.getItem('usuarios')||'[]').filter(function(u){return u.id!==id;})));
+      localStorage.removeItem('usuarioLogado');
+      alert('Conta excluída.'); window.location.href='../index.html';
+    }
+    function sair(){ localStorage.removeItem('usuarioLogado'); window.location.href='../index.html'; }
+  </script>
+</body>
+</html>
